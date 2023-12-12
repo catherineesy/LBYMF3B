@@ -1,6 +1,7 @@
 # LBYMF3B
 Term End Project 
 
+Training: 
 
 import tensorflow as tf
 from tensorflow.keras import layers, models
@@ -59,3 +60,43 @@ model.fit(
 )
 
 model.save('5.20epoch.white_blood_cell_model.keras')
+
+
+Testing: 
+
+import os
+import tensorflow as tf
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
+import numpy as np
+
+model = tf.keras.models.load_model('5.20epoch.white_blood_cell_model.keras')
+
+test_dir = 'Blood_cells/Test/'
+
+test_images = os.listdir(test_dir)
+
+output_file = '5.30epoch.test_results.txt'
+with open(output_file, 'w') as file:
+    for test_image in test_images:
+        img_path = os.path.join(test_dir, test_image)
+
+        img = image.load_img(img_path, target_size=(224, 224))
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)
+        img_array = preprocess_input(img_array)
+
+        predictions = model.predict(img_array)
+
+        class_labels = ['Basophil', 'Eosinophil', 'Lymphocyte', 'Monocyte', 'Neutrophil']
+        predicted_class = np.argmax(predictions)
+        predicted_label = class_labels[predicted_class]
+        confidence = predictions[0][predicted_class]
+
+        file.write(f"{predicted_label}")
+        #file.write(f"Image: {test_image}\n")
+        #file.write(f"Predicted class: {predicted_label}\n")
+        #file.write(f"Confidence: {confidence}\n")
+        file.write("\n")
+
+print(f"Results saved to {output_file}")
